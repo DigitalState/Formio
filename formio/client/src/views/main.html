@@ -1,0 +1,92 @@
+<div class="row">
+  <div class="col-sm-6">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-database"></i>
+          <span>Resources</span>
+          <a class="pull-right" href="http://help.form.io/userguide/#resources" target="_blank"><i class="glyphicon glyphicon-question-sign "></i></a>
+        </h3>
+      </div>
+      <div class="panel-body">
+        <i id="resource-loader" ng-if="resourcesLoading" style="font-size: 2em;" class="fa fa-spinner fa-pulse"></i>
+        <div class="well" ng-show="!resourcesLoading">
+          Resources are the objects within your Project. Example: User, Company, Vehicle, etc.
+        </div>
+        <table class="table table-striped">
+          <tbody>
+          <tr data-ng-repeat="resource in resources">
+            <td>
+              <div class="row">
+                <div class="col-sm-8">
+                  <a ui-sref="form.view({formId: resource._id})"><h5>{{ resource.title }}</h5></a>
+                </div>
+                <div class="col-sm-4">
+                  <div class="button-group pull-right" style="display:flex;">
+                    <a ui-sref="form.edit({formId: resource._id})" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-edit"></span> Edit</a>&nbsp;
+                    <a ui-sref="form.delete({formId: resource._id, formType: 'resource'})" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-trash"></span></a>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <bgf-pagination
+          collection="resources"
+          url="resourcesUrl"
+          per-page="formsPerPage"
+          template-url="formio-helper/pager.html"
+          ></bgf-pagination>
+      </div>
+      <div class="panel-footer text-right">
+        <a ui-sref="createForm({formType: 'resource'})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> New Resource</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6">
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-file-text-o"></i>
+          <span>Forms</span>
+          <a class="pull-right" href="http://help.form.io/userguide/#forms" target="_blank"><i class="glyphicon glyphicon-question-sign "></i></a>
+        </h3>
+      </div>
+      <div class="panel-body">
+        <i id="form-loader" ng-if="formsLoading" style="font-size: 2em;" class="fa fa-spinner fa-pulse"></i>
+        <div class="well" ng-show="!formsLoading">
+          Forms serve as a composite input interface for Resources as well as free-form user input. Example: Login Form, Contact Form, etc.
+        </div>
+        <table class="table table-striped">
+          <tbody>
+          <tr data-ng-repeat="form in forms">
+            <td>
+              <div class="row">
+                <div class="col-sm-8">
+                  <a ui-sref="form.view({formId: form._id})"><h5>{{ form.title }}</h5></a>
+                </div>
+                <div class="col-sm-4">
+                  <div class="button-group pull-right" style="display:flex;">
+                    <a ui-sref="form.edit({formId: form._id})" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-edit"></span> Edit</a>&nbsp;
+                    <a ui-sref="form.delete({formId: form._id, formType: 'form'})" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-trash"></span></a>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <bgf-pagination
+          collection="forms"
+          url="formsUrl"
+          per-page="formsPerPage"
+          template-url="formio-helper/pager.html"
+          ></bgf-pagination>
+      </div>
+      <div class="panel-footer text-right">
+        <a ui-sref="createForm({formType: 'form'})" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> New Form</a>
+      </div>
+    </div>
+  </div>
+</div>
