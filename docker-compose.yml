@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+  formio:
+    build: .
+    environment:
+      MONGODB_USERNAME: 'mongo'
+      MONGODB_PASSWORD: 'mongo'
+      MONGODB_DBNAME: 'admin'
+      MONGODB_ROLE: 'dbAdminAnyDatabase'
+    ports:
+      - '27017:27017'
+      - '28017:28017'
+      - '8888:8080'
+      - '3001:3001'
+    volumes:
+      - './formio:/opt/formio'
+
+volumes:
+  formio: {}
+#    driver: local
