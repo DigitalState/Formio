@@ -1,6 +1,6 @@
 .idea
-bower_components
+#bower_components
 #node_modules
 #client*
-app*
+#app*
 npm-debug.log
