@@ -1,31 +1,3 @@
-#ADD file:9b5ba3935021955492697a04d541cc7797e4bea34365117fb9566c3117d01fdf in /
-
-#RUN echo '#!/bin/sh' > /usr/sbin/policy-rc.d && echo 'exit 101' >> /usr/sbin/policy-rc.d && chmod +x /usr/sbin/policy-rc.d && dpkg-divert --local --rename --add /sbin/initctl && cp -a /usr/sbin/policy-rc.d /sbin/initctl && sed -i 's/^exit.*/exit 0/' /sbin/initctl && echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/docker-apt-speedup && echo 'DPkg::Post-Invoke { "rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true"; };' > /etc/apt/apt.conf.d/docker-clean && echo 'APT::Update::Post-Invoke { "rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true"; };' >> /etc/apt/apt.conf.d/docker-clean && echo 'Dir::Cache::pkgcache ""; Dir::Cache::srcpkgcache "";' >> /etc/apt/apt.conf.d/docker-clean && echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/docker-no-languages && echo 'Acquire::GzipIndexes "true"; Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/docker-gzip-indexes
-
-#RUN sed -i 's/^#\s*\(deb.*universe\$/\1/g' /etc/apt/sources.list
-
-#CMD "/bin/bash"
-
-#MAINTAINER Randall Knutson <randall@form.io>
-
-#RUN apt-get install -y curl && curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -
-#RUN apt-get update \
-#    && RUN apt-get update \
-#    && apt-get install -y \
-#        build-essential \
-#        autoconf \
-#        nasm \
-#        zlib1g-dev \
-#        libpng-dev \
-#        libkrb5-dev \
-#        python \
-#        git \
-#        nodejs
-
-#RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-#####
-
 FROM formio/ubuntu-base:latest
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y update \
@@ -68,21 +40,6 @@ RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated mongodb-org
 
 RUN mkdir /data
-#RUN echo "[Unit]\n\
-#Description=High-performance, schema-free document-oriented database]\n\
-#Documentation=man:mongod(1)]\n\
-#After=network.target]\n\
-#\n\
-#[Service]]\n\
-#User=mongodb]\n\
-#Group=mongodb]\n\
-#ExecStart=/usr/bin/mongod --quiet --config /etc/mongod.conf]\n\
-#\n\
-#[Install]]\n\
-#WantedBy=multi-user.target" | tee /lib/systemd/system/mongodb.service
-
-#RUN systemctl enable mongodb.service \
-#    && systemctl start mongodb
 
 ## PM2
 RUN mkdir /root
@@ -101,9 +58,9 @@ RUN touch /.firstrun
 ENTRYPOINT ["/scripts/run.sh"]
 CMD [""]
 
-# Expose listen port
-EXPOSE 27017
-EXPOSE 28017
+# Expose ports
+# EXPOSE 27017
+# EXPOSE 28017
 EXPOSE 3001
 
 # Expose our data volumes
