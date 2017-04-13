@@ -36,7 +36,7 @@ RUN cd ~ \
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
 RUN echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
 
-RUN apt-get update \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated mongodb-org
 
 RUN mkdir /data
@@ -46,7 +46,7 @@ RUN mkdir /root
 RUN npm install -g pm2
 
 ## Formio
-#ADD formio-master /opt/formio
+ADD formio /opt/formio
 #RUN cd /opt/formio && npm install
 
 # Add scripts

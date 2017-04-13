@@ -5,8 +5,9 @@
   "protocol": "http",
   "domain": "http://localhost:3001",
   "basePath": "",
-  "mongo": "mongodb://localhost:27017/formioapp",
-  "mongoSecret": "--- change me now ---",
+  "mongo": "FORMIO_MONGO_DSN",
+  "mongoSampleDatabaseConfiguration": "mongodb://localhost:27017/formioapp",
+  "mongoSecret": "FORMIO_MONGO_SECRET",
   "reservedForms": [
     "submission",
     "exists",
@@ -20,7 +21,7 @@
     "token"
   ],
   "jwt": {
-    "secret": "--- change me now ---",
+    "secret": "FORMIO_JWT_SECRET",
     "expireTime": 240
   },
   "email": {

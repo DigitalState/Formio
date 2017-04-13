@@ -3,6 +3,7 @@
 # Initialize first run
 if [[ -e /.firstrun ]]; then
     /scripts/mongo_setup.sh
+    /scripts/formio_setup.sh
 fi
 
 # Start MongoDB

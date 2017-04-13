@@ -8,6 +8,9 @@ services:
       MONGODB_PASSWORD: 'mongo'
       MONGODB_DBNAME: 'admin'
       MONGODB_ROLE: 'dbAdminAnyDatabase'
+      FORMIO_MONGO_DSN: 'ChangeThisValue'
+      FORMIO_MONGO_SECRET: 'ChangeThisValue'
+      FORMIO_JWT_SECRET: 'ChangeThisValue'
     ports:
       - '27017:27017'
       - '28017:28017'
