@@ -8,16 +8,18 @@ services:
       MONGODB_PASSWORD: 'mongo'
       MONGODB_DBNAME: 'admin'
       MONGODB_ROLE: 'dbAdminAnyDatabase'
-      FORMIO_MONGO_DSN: 'ChangeThisValue'
-      FORMIO_MONGO_SECRET: 'ChangeThisValue'
-      FORMIO_JWT_SECRET: 'ChangeThisValue'
+      FORMIO_MONGO_DSN: 'mongodb://10.200.10.1:27017/formioapp'
+      FORMIO_MONGO_SECRET: 'FORMIO_MONGO_SECRET'
+      FORMIO_JWT_SECRET: 'FORMIO_JWT_SECRET'
     ports:
-      - '27017:27017'
-      - '28017:28017'
-      - '8888:8080'
+#      - '27017:27018'
+#      - '27017:27017'
+#      - '28017:28017'
+#      - '8888:8080'
       - '3001:3001'
     volumes:
-      - './formio:/opt/formio'
+#      - './formio:/opt/formio'
+      - './data:/data'
 
 volumes:
   formio: {}
