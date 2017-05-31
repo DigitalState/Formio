@@ -1,4 +1,4 @@
-FROM formio/ubuntu-base:latest
+FROM ubuntu:16.04
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y update \
     && DEBIAN_FRONTEND=noninteractive apt-get -y upgrade \
@@ -14,6 +14,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y libreadline-gplv2-dev \
     libc6-dev \
     libbz2-dev \
     systemd \
+    apt-utils \
+    curl \
     wget
 
 # Python 2.7
@@ -29,25 +31,17 @@ RUN cd ~ \
 
 # Node.js
 RUN cd ~ \
-    && curl -sL https://deb.nodesource.com/setup_4.x \
+    && curl -sL https://deb.nodesource.com/setup_6.x | bash -\
     && DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
 
-## MongoDB
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
-RUN echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated mongodb-org
-
-RUN mkdir /data
-
 ## PM2
-RUN mkdir /root
+#RUN mkdir /root
 RUN npm install -g pm2
 
 ## Formio
 ADD formio /opt/formio
 #RUN cd /opt/formio && npm install
+RUN cd /opt/formio && npm rebuild
 
 # Add scripts
 ADD scripts /scripts
@@ -59,9 +53,7 @@ ENTRYPOINT ["/scripts/run.sh"]
 CMD [""]
 
 # Expose ports
-# EXPOSE 27017
-# EXPOSE 28017
-EXPOSE 3001
+# EXPOSE 3001
 
 # Expose our data volumes
 # VOLUME ["/data"]
