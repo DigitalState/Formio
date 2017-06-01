@@ -35,7 +35,7 @@ RUN cd ~ \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
 
 ## PM2
-#RUN mkdir /root
+RUN [ -d /root ] || mkdir /root
 RUN npm install -g pm2
 
 ## Formio
