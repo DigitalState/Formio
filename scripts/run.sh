@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Start the Formio app
 cd /opt/formio
