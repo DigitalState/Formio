@@ -1,6 +1,7 @@
 .idea
 #bower_components
 #node_modules
+node_modules.docker-container
 #client*
 #app*
 npm-debug.log
