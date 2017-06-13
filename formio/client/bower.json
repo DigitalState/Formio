@@ -2,12 +2,12 @@
   "name": "formio-app-formio",
   "version": "1.1.0",
   "dependencies": {
-    "angular-sanitize": "^1.6.2",
+    "angular-sanitize": "~1.6.4",
     "jquery": "^3.1.1",
     "angular-ui-router": "^0.4.2",
     "angular-bootstrap": "^2.5.0",
     "moment": "^2.17.1",
-    "angular": "^1.6.2",
+    "angular": "~1.6.4",
     "ngmap": "^1.18.0",
     "lodash": "^4.17.4",
     "bootstrap-sass": "^3.3.7",
@@ -20,6 +20,6 @@
   },
   "resolutions": {
     "jquery": "~2.1.4",
-    "angular": "^1.5.0"
+    "angular": "~1.6.4"
   }
 }
