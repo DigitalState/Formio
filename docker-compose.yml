@@ -16,7 +16,7 @@ services:
     formio:
         build: .
         depends_on:
-            formio_mongodb:
+            mongodb:
                 condition: service_healthy
         ports:
             - 3001:3001
