@@ -1,24 +1,24 @@
 version: '2.1'
 
 services:
-  mongodb:
-    image: 'mongo:3.4.3'
-    ports:
-      - '27017:27017'
-    volumes:
-      - './data:/data/db'
-    healthcheck:
-      test: ['CMD-SHELL', "echo 'db.stats().ok' | mongo localhost/formioapp --quiet"]
-      interval: '5s'
-      timeout: '1s'
-      retries: 10
+    formio_mongodb:
+        image: mongo:3.4.3
+        ports:
+            - 27017:27017
+        volumes:
+            - ./data:/data/db
+        healthcheck:
+            test: ['CMD-SHELL', "echo 'db.stats().ok' | mongo localhost/formioapp --quiet"]
+            interval: 5s
+            timeout: 1s
+            retries: 10
 
-  formio:
-    build: .
-    depends_on:
-      mongodb:
-        condition: 'service_healthy'
-    ports:
-      - '3001:3001'
-    volumes:
-      - './data:/data'
+    formio_formio:
+        build: .
+        depends_on:
+            formio_mongodb:
+                condition: service_healthy
+        ports:
+            - 3001:3001
+        volumes:
+            - ./data:/data
