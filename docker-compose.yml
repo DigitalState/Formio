@@ -6,7 +6,7 @@ services:
         ports:
             - 27017:27017
         volumes:
-            - ./data:/data/db
+            - '${DIRECTORY}/data:/data/db'
         healthcheck:
             test: ['CMD-SHELL', "echo 'db.stats().ok' | mongo localhost/formioapp --quiet"]
             interval: 5s
@@ -21,4 +21,4 @@ services:
         ports:
             - 3001:3001
         volumes:
-            - ./data:/data
+            - '${DIRECTORY}/data:/data'
