@@ -8,10 +8,8 @@ COPY formio /opt/formio
 
 RUN cd /opt/formio && npm rebuild
 
-COPY scripts /scripts
+RUN chmod +x /opt/formio/docker/*.sh
 
-RUN chmod +x /scripts/*.sh
-
-ENTRYPOINT /scripts/run.sh
+ENTRYPOINT /opt/formio/docker/run.sh
 
 CMD ['']
