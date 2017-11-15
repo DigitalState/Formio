@@ -1,4 +1,4 @@
 #!/bin/sh
 
-cd /opt/formio
+cd /srv/formio
 node main

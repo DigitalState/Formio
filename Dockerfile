@@ -2,14 +2,12 @@ FROM mhart/alpine-node:6.10.3
 
 RUN apk add --no-cache make gcc g++ python
 
-RUN mkdir -p /opt
+COPY formio /srv/formio
 
-COPY formio /opt/formio
+RUN cd /srv/formio && npm rebuild
 
-RUN cd /opt/formio && npm rebuild
+RUN chmod +x /srv/formio/docker/*.sh
 
-RUN chmod +x /opt/formio/docker/*.sh
-
-ENTRYPOINT /opt/formio/docker/run.sh
+ENTRYPOINT /srv/formio/docker/run.sh
 
 CMD ['']
