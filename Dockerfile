@@ -8,6 +8,8 @@ RUN cd /srv/formio && npm rebuild
 
 RUN chmod +x /srv/formio/docker/*.sh
 
+EXPOSE 80
+
 ENTRYPOINT /srv/formio/docker/run.sh
 
 CMD ['']

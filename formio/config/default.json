@@ -1,12 +1,12 @@
 {
-  "port": 3001,
+  "port": 80,
   "appPort": 8080,
-  "host": "localhost:3001",
+  "host": "api.formio.ds",
   "protocol": "http",
-  "domain": "http://localhost:3001",
+  "domain": "http://api.formio.ds",
   "basePath": "",
   "mongo": "mongodb://formio_mongodb:27017/formioapp",
-  "mongoSampleDatabaseConfiguration": "mongodb://localhost:27017/formioapp",
+  "mongoSampleDatabaseConfiguration": "mongodb://formio_mongodb:27017/formioapp",
   "mongoSecret": "FORMIO_MONGO_SECRET",
   "reservedForms": [
     "submission",
