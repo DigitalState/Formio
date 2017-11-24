@@ -1,32 +1,34 @@
 version: '2.1'
 
 volumes:
-    formio_mongodb_data:
+    mongodb_data:
         driver: local
 
-    formio_formio_data:
+    formio_data:
         driver: local
 
 services:
-    formio_mongodb:
+    mongodb:
         image: mongo:3.4.3
         volumes:
-            - formio_mongodb_data:/data/db
+            - mongodb_data:/data/db
         healthcheck:
             test: ['CMD-SHELL', 'echo "db.stats().ok" | mongo localhost/formioapp --quiet']
             interval: 5s
             timeout: 1s
             retries: 10
 
-    formio_formio:
+    formio:
         build: .
         depends_on:
-            formio_mongodb:
+            mongodb:
                 condition: service_healthy
         environment:
             - VIRTUAL_HOST
         volumes:
-            - formio_formio_data:/data
+            - formio_data:/data
+        links:
+              - mongodb:formio_mongodb
         extra_hosts:
             - 'api.assets.ds:${PROXY_HOST}'
             - 'api.authentication.ds:${PROXY_HOST}'
