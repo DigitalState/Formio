@@ -3,14 +3,6 @@
 @import "bower_components/bootswatch/yeti/_bootswatch.scss";
 @import "bower_components/font-awesome/scss/font-awesome";
 
-// // // Variables // // //
-
-$nav-background-color: transparent;
-$nav-link-color: #272727;
-$nav-link-color-hover: #106baf;
-
-// // // // // // // // //
-
 .browsehappy {
   margin: 0.2em 0;
   background: #ccc;
@@ -18,29 +10,16 @@ $nav-link-color-hover: #106baf;
   padding: 0.2em 0;
 }
 
+.navbar {
+  background-color: transparent;
+
+  > .container {
+    border: solid #ddd;
+    border-width: 0 0 1px 0;
+  }
+}
+
 .logo img {
   height: 24px;
   margin-top: 0px;
-}
-
-.navbar-default {
-  background-color: $nav-background-color;
-  border-color: transparent;
-
-  #navbar {
-    border: solid #ddd;
-    border-width: 0 0 1px 0;
-
-    .navbar-nav > {
-      li > a, .active > a {
-        color: $nav-link-color;
-        background-color: $nav-background-color;
-
-        &:focus, &:hover {
-          color: $nav-link-color-hover;
-          background-color: $nav-background-color;
-        }
-      }
-    }
-  }
 }

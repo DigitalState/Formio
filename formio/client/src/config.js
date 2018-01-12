@@ -1,7 +1,7 @@
 // var APP_URL = 'https://example.form.io';
 // var API_URL = 'https://api.form.io';
-var APP_URL = 'http://localhost:3001';
-var API_URL = 'http://localhost:3001';
+var APP_URL = 'http://api.formio.ds:80';
+var API_URL = 'http://api.formio.ds:80';
 
 // Parse query string
 var query = {};
