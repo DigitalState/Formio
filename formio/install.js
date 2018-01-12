@@ -22,6 +22,7 @@ module.exports = function(formio, items, done) {
 
   // The application they wish to install.
   var application = '';
+  var templateFile = '';
 
   /**
    * Download a zip file.
@@ -35,13 +36,13 @@ module.exports = function(formio, items, done) {
   var download = function(url, zipFile, dir, done) {
     // Check to see if the client already exists.
     if (fs.existsSync(zipFile)) {
-      util.log(directories[dir] + ' file already exists, skipping download.');
+      util.log(`${directories[dir]  } file already exists, skipping download.`);
       return done();
     }
 
     var request = require('request');
     var ProgressBar = require('progress');
-    util.log('Downloading ' + dir + '...'.green);
+    util.log(`Downloading ${  dir  }${'...'.green}`);
 
     // Download the project.
     var downloadError = null;
@@ -102,7 +103,7 @@ module.exports = function(formio, items, done) {
   var extract = function(zipFile, fromDir, dir, done) {
     // See if we need to extract.
     if (fs.existsSync(directories[dir])) {
-      util.log(directories[dir] + ' already exists, skipping extraction.');
+      util.log(`${directories[dir]  } already exists, skipping extraction.`);
       return done();
     }
 
@@ -129,21 +130,24 @@ module.exports = function(formio, items, done) {
         return done(err);
       }
 
+      // Set local variable to directory path.
+      var directoryPath = directories[dir];
+
       // Change the document root if we need to.
       if (info.formio && info.formio.docRoot) {
-        directories[dir] = path.join(directories[dir], info.formio.docRoot);
+        directoryPath = path.join(directories[dir], info.formio.docRoot);
       }
 
-      if (!fs.existsSync(path.join(directories[dir], 'config.template.js'))) {
+      if (!fs.existsSync(path.join(directoryPath, 'config.template.js'))) {
         return done('Missing config.template.js file');
       }
 
       // Change the project configuration.
-      var config = fs.readFileSync(path.join(directories[dir], 'config.template.js'));
+      var config = fs.readFileSync(path.join(directoryPath, 'config.template.js'));
       var newConfig = nunjucks.renderString(config.toString(), {
         domain: formio.config.domain ? formio.config.domain : 'https://form.io'
       });
-      fs.writeFileSync(path.join(directories[dir], 'config.js'), newConfig);
+      fs.writeFileSync(path.join(directoryPath, 'config.js'), newConfig);
       done();
     });
   };
@@ -178,6 +182,7 @@ module.exports = function(formio, items, done) {
     whatApp: function(done) {
       var repos = [
         'None',
+        'https://github.com/formio/formio-app-humanresources',
         'https://github.com/formio/formio-app-servicetracker',
         'https://github.com/formio/formio-app-todo',
         'https://github.com/formio/formio-app-salesquote',
@@ -185,7 +190,7 @@ module.exports = function(formio, items, done) {
       ];
       var message = '\nWhich Github application would you like to install?\n'.green;
       _.each(repos, function(repo, index) {
-        message += '  ' + (index + 1) + '.) ' + repo + '\n';
+        message += `  ${  index + 1  }.) ${  repo  }\n`;
       });
       message += '\nOr, you can provide a custom Github repository...\n'.green;
       util.log(message);
@@ -232,7 +237,7 @@ module.exports = function(formio, items, done) {
 
       // Download the app.
       download(
-        'https://nodeload.github.com/' + application + '/zip/master',
+        `https://nodeload.github.com/${  application  }/zip/master`,
         'app.zip',
         'app',
         done
@@ -251,7 +256,7 @@ module.exports = function(formio, items, done) {
       }
 
       var parts = application.split('/');
-      var appDir = parts[1] + '-master';
+      var appDir = `${parts[1]  }-master`;
       extract('app.zip', appDir, 'app', done);
     },
 
@@ -290,6 +295,39 @@ module.exports = function(formio, items, done) {
     },
 
     /**
+     * Select the template to use.
+     *
+     * @param done
+     * @return {*}
+     */
+    whatTemplate: function(done) {
+      if (application) {
+        templateFile = 'app';
+        return done();
+      }
+
+      var message = '\nWhich project template would you like to install?\n'.green;
+      message += '\n   Please provide the local file path of the project.json file.'.yellow;
+      message += '\n   Or, just press '.yellow + 'ENTER'.green + ' to use the default template.\n'.yellow;
+      util.log(message);
+      prompt.get([
+        {
+          name: 'templateFile',
+          description: 'Local file path or just press Enter for default.',
+          default: 'client',
+          required: true
+        }
+      ], function(err, results) {
+        if (err) {
+          return done(err);
+        }
+
+        templateFile = results.templateFile ? results.templateFile : 'client';
+        done();
+      });
+    },
+
+    /**
      * Import the template.
      * @param done
      */
@@ -298,14 +336,16 @@ module.exports = function(formio, items, done) {
         return done();
       }
 
-      // Which directory to use for importing.
-      var dir = application ? 'app' : 'client';
+      // Determine if this is a custom project.
+      var customProject = (['app', 'client'].indexOf(templateFile) === -1);
+      var directoryPath = '';
 
-      if (!items.extract) {
+      if (!customProject) {
+        directoryPath = directories[templateFile];
         // Get the package json file.
         var info = {};
         try {
-          info = JSON.parse(fs.readFileSync(directories[dir] + '/package.json'));
+          info = JSON.parse(fs.readFileSync(path.join(directoryPath, 'package.json')));
         }
         catch (err) {
           debug(err);
@@ -314,17 +354,19 @@ module.exports = function(formio, items, done) {
 
         // Change the document root if we need to.
         if (info.formio && info.formio.docRoot) {
-          directories[dir] = path.join(directories[dir], info.formio.docRoot);
+          directoryPath = path.join(directoryPath, info.formio.docRoot);
         }
       }
 
-      if (!fs.existsSync(directories[dir] + '/project.json')) {
-        return done('Missing project.json file');
+      var projectJson = customProject ? templateFile : path.join(directoryPath, 'project.json');
+      if (!fs.existsSync(projectJson)) {
+        util.log(projectJson);
+        return done('Missing project.json file'.red);
       }
 
       var template = {};
       try {
-        template = JSON.parse(fs.readFileSync(path.join(directories[dir], 'project.json')));
+        template = JSON.parse(fs.readFileSync(projectJson));
       }
       catch (err) {
         debug(err);
@@ -333,7 +375,7 @@ module.exports = function(formio, items, done) {
 
       // Get the form.io service.
       util.log('Importing template...'.green);
-      var importer = require('./src/templates/import')(formio);
+      var importer = require('./src/templates/import')({formio: formio});
       importer.template(template, function(err, template) {
         if (err) {
           return done(err);
@@ -391,12 +433,13 @@ module.exports = function(formio, items, done) {
   util.log('Installing...');
   prompt.start();
   async.series([
-    // steps.areYouSure,
-    // steps.whatApp,
-    // steps.downloadApp,
-    // steps.extractApp,
-    // steps.downloadClient,
-    // steps.extractClient,
+    steps.areYouSure,
+    steps.whatApp,
+    steps.downloadApp,
+    steps.extractApp,
+    steps.downloadClient,
+    steps.extractClient,
+    steps.whatTemplate,
     steps.importTemplate,
     steps.createRootUser
   ], function(err, result) {

@@ -1,15 +1,15 @@
 'use strict';
 
-var _ = require('lodash');
-var async = require('async');
-var util = require('../util/util');
-var Validator = require('../resources/Validator');
-var Q = require('q');
+const _ = require('lodash');
+const async = require('async');
+const util = require('../util/util');
+const Validator = require('../resources/Validator');
+const Q = require('q');
 
 module.exports = function(router, resourceName, resourceId) {
-  var hook = require('../util/hook')(router.formio);
-  var fieldActions = require('../actions/fields/index')(router);
-  var handlers = {};
+  const hook = require('../util/hook')(router.formio);
+  const fieldActions = require('../actions/fields/index')(router);
+  const handlers = {};
 
   // Iterate through the possible handlers.
   _.each([
@@ -48,8 +48,124 @@ module.exports = function(router, resourceName, resourceId) {
      * @param res
      * @param done
      */
-    var executeFieldHandler = function(component, path, validation, handlerName, req, res, done) {
+    const executeFieldHandler = function(component, path, validation, handlerName, req, res, done) {
       Q()
+        .then(function() {
+          // If this is a component reference.
+          /* eslint-disable max-depth */
+          const hiddenFields = ['deleted', '__v', 'machineName'];
+          if (component.reference) {
+            if (
+              (handlerName === 'afterGet') &&
+              res.resource &&
+              res.resource.item
+            ) {
+              const formId = component.form || component.resource;
+              const compValue = _.get(res.resource.item.data, path);
+              if (compValue && compValue._id) {
+                const submissionModel = req.submissionModel || router.formio.resources.submission.model;
+
+                return Q.ninvoke(hook, 'alter', 'submissionQuery', {
+                  _id: util.idToBson(compValue._id.toString()),
+                  deleted: {$eq: null}
+                }, null, req)
+                  .then((query) => Q.ninvoke(submissionModel, 'findOne', query))
+                  .then((submission) => new Promise((resolve, reject) => {
+                    // Manually filter the protected fields.
+                    router.formio.middleware.filterProtectedFields('create', (req) => {
+                      return formId;
+                    })(req, {resource: {item: submission}}, function(err) {
+                      if (err) {
+                        return reject(err);
+                      }
+                      resolve(submission);
+                    });
+                  }))
+                  .then((submission) => {
+                    if (submission && submission._id) {
+                      _.set(res.resource.item.data, path, _.omit(submission.toObject(), hiddenFields));
+                    }
+                  });
+              }
+            }
+            else if ((handlerName === 'afterIndex') && res.resource && res.resource.item) {
+              const formId = component.form || component.resource;
+              const resources = [];
+              _.each(res.resource.item, (resource) => {
+                const compValue = _.get(resource.data, path);
+                if (compValue && compValue._id) {
+                  resources.push(util.idToBson(compValue._id.toString()));
+                }
+              });
+
+              const submissionModel = req.submissionModel || router.formio.resources.submission.model;
+
+              return Q.ninvoke(hook, 'alter', 'submissionQuery', {
+                _id: {'$in': resources},
+                deleted: {$eq: null}
+              }, null, req)
+                .then((query) => Q.ninvoke(submissionModel, 'find', query))
+                .then((submissions) => new Promise((resolve, reject) => {
+                  // Manually filter the protected fields.
+                  router.formio.middleware.filterProtectedFields('index', (req) => {
+                    return formId;
+                  })(req, {resource: {item: submissions}}, function(err) {
+                    if (err) {
+                      return reject(err);
+                    }
+                    resolve(submissions);
+                  });
+                }))
+                .then((submissions) => {
+                  _.each(res.resource.item, (resource) => {
+                    const compValue = _.get(resource.data, path);
+                    if (compValue && compValue._id) {
+                      const submission = _.find(submissions, (sub) => {
+                        return sub._id.toString() === compValue._id.toString();
+                      });
+                      if (submission) {
+                        _.set(resource.data, path, _.omit(submission.toObject(), hiddenFields));
+                      }
+                    }
+                  });
+                });
+            }
+            else if (
+              ((handlerName === 'afterPost') || (handlerName === 'afterPut')) &&
+              res.resource &&
+              res.resource.item &&
+              req.resources
+            ) {
+              // Make sure to reset the value on the return result.
+              const compValue = _.get(res.resource.item.data, path);
+              if (compValue && req.resources.hasOwnProperty(compValue._id)) {
+                _.set(res.resource.item.data, path, req.resources[compValue._id]);
+              }
+            }
+            else if (
+              ((handlerName === 'beforePost') || (handlerName === 'beforePut')) &&
+              req.body
+            ) {
+              const compValue = _.get(req.body.data, path);
+              if (compValue && compValue._id && compValue.hasOwnProperty('data')) {
+                if (!req.resources) {
+                  req.resources = {};
+                }
+
+                // Save for later.
+                req.resources[compValue._id.toString()] = _.omit(compValue, hiddenFields);
+
+                // Ensure we only set the _id of the resource.
+                _.set(req.body.data, path, {
+                  _id: compValue._id
+                });
+              }
+            }
+          }
+          /* eslint-enable max-depth */
+
+          return Q();
+        })
         .then(function() {
           // Call the unique field action if applicable.
           if (
@@ -88,7 +204,7 @@ module.exports = function(router, resourceName, resourceId) {
      * @param req
      * @param done
      */
-    var loadCurrentForm = function(req, done) {
+    const loadCurrentForm = function(req, done) {
       router.formio.cache.loadCurrentForm(req, function(err, form) {
         if (err) {
           return done(err);
@@ -97,10 +213,14 @@ module.exports = function(router, resourceName, resourceId) {
           return done('Form not found.');
         }
 
-        req.currentForm = form;
-        req.flattenedComponents = util.flattenComponents(form.components);
-        done();
-      });
+        req.currentForm = hook.alter('currentForm', form, req.body);
+
+        // Load all subforms as well.
+        router.formio.cache.loadSubForms(req.currentForm, req, function() {
+          req.flattenedComponents = util.flattenComponents(form.components);
+          return done();
+        });
+      }, true);
     };
 
     /**
@@ -109,17 +229,18 @@ module.exports = function(router, resourceName, resourceId) {
      * @param req
      * @param done
      */
-    var initializeSubmission = function(req, done) {
-      var isGet = (req.method === 'GET');
+    const initializeSubmission = function(req, done) {
+      const isGet = (req.method === 'GET');
 
       // If this is a get method, then filter the model query.
       if (isGet) {
-        req.countQuery = req.countQuery || this.model;
-        req.modelQuery = req.modelQuery || this.model;
-
-        // Set the model query to filter based on the ID.
-        req.countQuery = req.countQuery.find({form: req.currentForm._id});
-        req.modelQuery = req.modelQuery.find({form: req.currentForm._id});
+        req.countQuery = req.countQuery || req.model || this.model;
+        req.modelQuery = req.modelQuery || req.model || this.model;
+        if (req.handlerName !== 'beforeGet') {
+          // Set the model query to filter based on the ID.
+          req.countQuery = req.countQuery.find({form: req.currentForm._id});
+          req.modelQuery = req.modelQuery.find({form: req.currentForm._id});
+        }
       }
 
       // If the request has a body.
@@ -128,7 +249,7 @@ module.exports = function(router, resourceName, resourceId) {
         req.skipResource = true;
 
         // Only allow the data to go through.
-        var properties = hook.alter('submissionParams', ['data', 'owner', 'access']);
+        const properties = hook.alter('submissionParams', ['data', 'owner', 'access']);
         req.body = _.pick(req.body, properties);
 
         // Ensure there is always data provided on POST.
@@ -158,7 +279,7 @@ module.exports = function(router, resourceName, resourceId) {
      * @param res
      * @param done
      */
-    var initializeActions = function(req, res, done) {
+    const initializeActions = function(req, res, done) {
       // If they wish to disable actions, then just skip.
       if (req.query.hasOwnProperty('dryrun') && req.query.dryrun) {
         return done();
@@ -174,7 +295,7 @@ module.exports = function(router, resourceName, resourceId) {
      * @param form
      * @param done
      */
-    var validateSubmission = function(req, res, done) {
+    const validateSubmission = function(req, res, done) {
       // No need to validate on GET requests.
       if (!((req.method === 'POST' || req.method === 'PUT') && req.body && !req.noValidate)) {
         return done();
@@ -189,18 +310,24 @@ module.exports = function(router, resourceName, resourceId) {
       // Clone the submission to the real value of the request body.
       req.submission = _.cloneDeep(req.body);
 
-      // Next we need to validate the input.
-      var validator = new Validator(req.currentForm, router.formio.resources.submission.model);
+      hook.alter('validateSubmissionForm', req.currentForm, req.body, function(form) {
+        // Get the submission model.
+        const submissionModel = req.submissionModel || router.formio.resources.submission.model;
 
-      // Validate the request.
-      validator.validate(req.body, function(err, value) {
-        if (err) {
-          return res.status(400).json(err);
-        }
+        // Next we need to validate the input.
+        const token = util.getRequestValue(req, 'x-jwt-token');
+        const validator = new Validator(req.currentForm, submissionModel, token);
 
-        // Reset the value to what the validator returns.
-        req.body.data = value;
-        done();
+        // Validate the request.
+        validator.validate(req.body, function(err, submission) {
+          if (err) {
+            return res.status(400).json(err);
+          }
+
+          res.submission = {data: submission};
+
+          done();
+        });
       });
     };
 
@@ -211,7 +338,7 @@ module.exports = function(router, resourceName, resourceId) {
      * @param res
      * @param done
      */
-    var executeActions = function(handler) {
+    const executeActions = function(handler) {
       return function(req, res, done) {
         // If they wish to disable actions, then just skip.
         if (req.query.hasOwnProperty('dryrun') && req.query.dryrun) {
@@ -239,7 +366,7 @@ module.exports = function(router, resourceName, resourceId) {
      * @param res
      * @param done
      */
-    var executeFieldHandlers = function(validation, req, res, done) {
+    const executeFieldHandlers = function(validation, req, res, done) {
       // If they wish to disable actions, then just skip.
       if (req.query.hasOwnProperty('dryrun') && req.query.dryrun) {
         return done();
@@ -251,7 +378,7 @@ module.exports = function(router, resourceName, resourceId) {
           component.hasOwnProperty('persistent') &&
           !component.persistent
         ) {
-          util.deleteProp('data.' + path)(req.body);
+          util.deleteProp(`data.${path}`)(req.body);
         }
 
         executeFieldHandler(component, path, validation, req.handlerName, req, res, cb);
@@ -265,15 +392,19 @@ module.exports = function(router, resourceName, resourceId) {
      * @param res
      * @param done
      */
-    var ensureResponse = function(req, res, done) {
+    const ensureResponse = function(req, res, done) {
       if (!res.resource && !res.headersSent) {
-        res.status(200).json(true);
+        res.status(200).json(res.submission || true);
       }
       done();
     };
 
+    const alterSubmission = function(req, res, done) {
+      hook.alter('submission', req, res, done);
+    };
+
     // Add before handlers.
-    var before = 'before' + method.method;
+    const before = `before${method.method}`;
     handlers[before] = function(req, res, next) {
       req.handlerName = before;
       async.series([
@@ -283,17 +414,19 @@ module.exports = function(router, resourceName, resourceId) {
         async.apply(executeFieldHandlers, false, req, res),
         async.apply(validateSubmission, req, res),
         async.apply(executeFieldHandlers, true, req, res),
+        async.apply(alterSubmission, req, res),
         async.apply(executeActions('before'), req, res)
       ], next);
     };
 
     // Add after handlers.
-    var after = 'after' + method.method;
+    const after = `after${method.method}`;
     handlers[after] = function(req, res, next) {
       req.handlerName = after;
       async.series([
         async.apply(executeActions('after'), req, res),
         async.apply(executeFieldHandlers, true, req, res),
+        async.apply(alterSubmission, req, res),
         async.apply(ensureResponse, req, res)
       ], next);
     };

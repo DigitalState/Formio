@@ -1,10 +1,11 @@
 'use strict';
 
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 // Defines what each external ID should be.
-var ExternalIdSchema = mongoose.Schema({
+const ExternalIdSchema = mongoose.Schema({
   type: String,
+  resource: String,
   id: String
 });
 
@@ -13,9 +14,9 @@ ExternalIdSchema.plugin(require('../plugins/timestamps'));
 
 // Export the submission model.
 module.exports = function(formio) {
-  var hook = require('../util/hook')(formio);
+  const hook = require('../util/hook')(formio);
 
-  return require('./BaseModel')({
+  const model = require('./BaseModel')({
     schema: new mongoose.Schema(hook.alter('submissionSchema', {
       form: {
         type: mongoose.Schema.Types.ObjectId,
@@ -24,10 +25,17 @@ module.exports = function(formio) {
         required: true
       },
       owner: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.Mixed,
         ref: 'submission',
         index: true,
-        default: null
+        default: null,
+        set: owner => {
+          // Attempt to convert to objectId.
+          return formio.util.ObjectId(owner);
+        },
+        get: owner => {
+          return owner ? owner.toString() : owner;
+        }
       },
       deleted: {
         type: Number,
@@ -65,4 +73,13 @@ module.exports = function(formio) {
       }
     }))
   });
+
+  // Add a partial index for deleted submissions.
+  model.schema.index({
+    deleted: 1
+  }, {
+    partialFilterExpression: {deleted: {$eq: null}}
+  });
+
+  return model;
 };

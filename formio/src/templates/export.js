@@ -1,20 +1,21 @@
 'use strict';
 
-var async = require('async');
-var _ = require('lodash');
-var util = require('../util/util');
+const async = require('async');
+const _ = require('lodash');
+const util = require('../util/util');
 
 /**
  * Perform an export of a specified template.
  *
- * @param formio
- *   The formio object.
+ * @param {Object} router
+ *   The express router object.
  */
-module.exports = function(formio) {
-  var hook = require('../util/hook')(formio);
+module.exports = (router) => {
+  const formio = router.formio;
+  const hook = require('../util/hook')(formio);
 
   // Assign the role ids.
-  var assignRoles = function(_map, perms) {
+  const assignRoles = function(_map, perms) {
     _.each(perms, function(access) {
       _.each(access.roles, function(roleId, i) {
         roleId = roleId.toString();
@@ -26,7 +27,7 @@ module.exports = function(formio) {
   };
 
   // Assign the role to an entity.
-  var assignRole = function(_map, entity) {
+  const assignRole = function(_map, entity) {
     if (!entity) {
       return;
     }
@@ -36,7 +37,7 @@ module.exports = function(formio) {
   };
 
   // Assign the resources.
-  var assignResources = function(_map, entity) {
+  const assignResources = function(_map, entity) {
     if (!entity || !entity.resources) {
       return;
     }
@@ -48,7 +49,7 @@ module.exports = function(formio) {
   };
 
   // Assign the resource of an entity.
-  var assignResource = function(_map, entity) {
+  const assignResource = function(_map, entity) {
     if (!entity || !entity.resource) {
       return;
     }
@@ -58,7 +59,7 @@ module.exports = function(formio) {
   };
 
   // Assign form.
-  var assignForm = function(_map, entity) {
+  const assignForm = function(_map, entity) {
     if (!entity) {
       return;
     }
@@ -70,7 +71,7 @@ module.exports = function(formio) {
   };
 
   // Export actions.
-  var exportActions = function(_export, _map, options, next) {
+  const exportActions = function(_export, _map, options, next) {
     formio.actions.model.find({
         form: {$in: _.keys(_map.forms)},
         deleted: {$eq: null}
@@ -85,7 +86,7 @@ module.exports = function(formio) {
           assignRole(_map, action.settings);
           assignResource(_map, action.settings);
           assignResources(_map, action.settings);
-          var machineName = action.machineName = hook.alter('machineNameExport', action.machineName);
+          const machineName = action.machineName = hook.alter('machineNameExport', action.machineName);
           _export.actions[machineName] = _.pick(action,
             'title',
             'name',
@@ -102,7 +103,7 @@ module.exports = function(formio) {
   };
 
   // Export forms.
-  var exportForms = function(_export, _map, options, next) {
+  const exportForms = function(_export, _map, options, next) {
     formio.resources.form.model
       .find(hook.alter('formQuery', {deleted: {$eq: null}}, options))
       .lean(true)
@@ -113,8 +114,8 @@ module.exports = function(formio) {
         _.each(forms, function(form) {
           assignRoles(_map, form.access);
           assignRoles(_map, form.submissionAccess);
-          var machineName = form.machineName = hook.alter('machineNameExport', form.machineName);
-          _export[form.type + 's'][machineName] = _.pick(form,
+          const machineName = form.machineName = hook.alter('machineNameExport', form.machineName);
+          _export[`${form.type}s`][machineName] = _.pick(form,
             'title',
             'type',
             'name',
@@ -122,6 +123,7 @@ module.exports = function(formio) {
             'display',
             'action',
             'tags',
+            'settings',
             'components',
             'access',
             'submissionAccess'
@@ -132,26 +134,19 @@ module.exports = function(formio) {
         // Now assign the resource components.
         _.each(forms, function(form) {
           util.eachComponent(form.components, function(component) {
-            if (
-              (component.type === 'resource') &&
-              (_map.forms && _map.forms.hasOwnProperty(component.resource))
-            ) {
-              component.resource = _map.forms[component.resource];
-            }
-
-            if (
-              (component.type === 'select') &&
-              (component.dataSrc === 'resource') &&
-              (component.data) &&
-              (component.data.resource) &&
-              (_map.forms && _map.forms.hasOwnProperty(component.data.resource))
-            ) {
+            assignForm(_map, component);
+            assignForm(_map, component.data);
+            assignResource(_map, component);
+            assignResource(_map, component.data);
+            if (component && component.data && component.data.project) {
               component.data.project = 'project';
-              component.data.resource = _map.forms[component.data.resource];
+            }
+            if (component && component.project) {
+              component.project = 'project';
             }
 
             // Allow hooks to alter fields.
-            hook.alter('exportComponent', _export, _map, options, component);
+            hook.alter('exportComponent', component);
           });
         });
         next();
@@ -159,7 +154,7 @@ module.exports = function(formio) {
   };
 
   // Export the roles.
-  var exportRoles = function(_export, _map, options, next) {
+  const exportRoles = function(_export, _map, options, next) {
     formio.resources.role.model
       .find(hook.alter('roleQuery', {deleted: {$eq: null}}, options))
       .lean(true)
@@ -168,7 +163,7 @@ module.exports = function(formio) {
           return next(err);
         }
         _.each(roles, function(role) {
-          var machineName = role.machineName = hook.alter('machineNameExport', role.machineName);
+          const machineName = role.machineName = hook.alter('machineNameExport', role.machineName);
           _export.roles[machineName] = _.pick(role,
             'title',
             'description',
@@ -183,41 +178,57 @@ module.exports = function(formio) {
   };
 
   /**
-   * Return an easy way for someone to install a template.
+   * Export the formio template.
+   *
+   * Note: This is all of the core entities, not submission data.
    */
-  return {
-    export: function(options, next) {
-      var _export = {
-        title: options.title ? options.title : 'Export',
-        version: '2.0.0',
-        description: options.description ? options.description : '',
-        name: options.name ? options.name : 'export',
-        plan: options.plan ? options.plan : 'community',
-        roles: {},
-        forms: {},
-        actions: {},
-        resources: {}
-      };
+  const exportTemplate = (options, next) => {
+    const template = hook.alter('defaultTemplate', Object.assign({
+      title: 'Export',
+      version: '2.0.0',
+      description: '',
+      name: 'export',
+      roles: {},
+      forms: {},
+      actions: {},
+      resources: {}
+    }, _.pick(options, ['title', 'version', 'description', 'name'])), options);
 
-      // Keep track of a resource mapping.
-      var _map = {
-        roles: {},
-        forms: {}
-      };
+    // Memoize resource mapping.
+    const map = {
+      roles: {},
+      forms: {}
+    };
 
-      // Export the roles forms and actions.
-      async.series([
-        async.apply(exportRoles, _export, _map, options),
-        async.apply(exportForms, _export, _map, options),
-        async.apply(exportActions, _export, _map, options)
-      ], function(err) {
+    // Export the roles forms and actions.
+    async.series(hook.alter(`templateExportSteps`, [
+      async.apply(exportRoles, template, map, options),
+      async.apply(exportForms, template, map, options),
+      async.apply(exportActions, template, map, options)
+    ], template, map, options), (err) => {
+      if (err) {
+        return next(err);
+      }
+
+      // Send the export.
+      return next(null, template);
+    });
+  };
+
+  // Add the export endpoint
+  if (router.get) {
+    router.get('/export', (req, res, next) => {
+      const options = hook.alter('exportOptions', {}, req, res);
+      exportTemplate(options, (err, data) => {
         if (err) {
-          return next(err);
+          return next(err.message || err);
         }
 
-        // Send the export.
-        return next(null, _export);
+        res.attachment(`${options.name}-${options.version}.json`);
+        res.end(JSON.stringify(data));
       });
-    }
-  };
+    });
+  }
+
+  return exportTemplate;
 };

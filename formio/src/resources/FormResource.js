@@ -1,36 +1,28 @@
 'use strict';
 
-var Resource = require('resourcejs');
-var mongoose = require('mongoose');
-var _ = require('lodash');
+const Resource = require('resourcejs');
+const mongoose = require('mongoose');
+const _ = require('lodash');
 
 module.exports = function(router) {
   // Include the hook system.
-  var hook = require('../util/hook')(router.formio);
+  const hook = require('../util/hook')(router.formio);
+  const util = router.formio.util;
 
   // @TODO: Fix permission check to use the new roles and permissions system.
-  var sanitizeValidations = function(req, res, next) {
+  const sanitizeValidations = function(req, res, next) {
     if (
       req.method === 'GET' &&
       res.resource &&
       res.resource.item
     ) {
       // Make sure we do not expose private validations.
-      var checkPrivateValidation = function(form) {
-        var hasAccess = false;
-        if (req.user) {
-          _.each(form.access, function(access) {
-            if (access && access.hasOwnProperty('id') && (access.id.toString() === req.user._id.toString())) {
-              hasAccess = true;
-              return;
-            }
-          });
-        }
-        if (hasAccess) {
+      const checkPrivateValidation = function(form) {
+        if (req.isAdmin) {
           return;
         }
 
-        _.each(form.components, function(component, index) {
+        util.eachComponent(form.components, function(component) {
           if (component.validate && component.validate.customPrivate) {
             delete component.validate.custom;
           }
@@ -52,33 +44,38 @@ module.exports = function(router) {
     next();
   };
 
-  return Resource(router, '', 'form', mongoose.model('form', router.formio.schemas.form))
-  .rest(hook.alter('formRoutes', {
-    before: [
-      router.formio.middleware.filterMongooseExists({field: 'deleted', isNull: true}),
-      router.formio.middleware.bootstrapEntityOwner(false),
-      router.formio.middleware.formHandler,
-      router.formio.middleware.formActionHandler('before'),
-      router.formio.middleware.condensePermissionTypes,
-      router.formio.middleware.deleteFormHandler,
-      router.formio.middleware.mergeFormHandler
-    ],
-    after: [
-      sanitizeValidations,
-      router.formio.middleware.bootstrapFormAccess,
-      router.formio.middleware.formActionHandler('after'),
-      router.formio.middleware.filterResourcejsResponse(['deleted', '__v'])
-    ],
-    hooks: {
-      put: {
-        before: function(req, res, item, next) {
-          if (item.components) {
-            item.markModified('components');
-          }
+  /* eslint-disable new-cap */
+  // If the last argument is a function, hook.alter assumes it is a callback function.
+  const FormResource = hook.alter('FormResource', Resource, null);
 
-          return next();
+  return FormResource(router, '', 'form', mongoose.model('form'))
+    .rest(hook.alter('formRoutes', {
+      before: [
+        router.formio.middleware.filterMongooseExists({field: 'deleted', isNull: true}),
+        router.formio.middleware.bootstrapEntityOwner(false),
+        router.formio.middleware.formHandler,
+        router.formio.middleware.formActionHandler('before'),
+        router.formio.middleware.condensePermissionTypes,
+        router.formio.middleware.deleteFormHandler,
+        router.formio.middleware.mergeFormHandler
+      ],
+      after: [
+        sanitizeValidations,
+        router.formio.middleware.bootstrapFormAccess,
+        router.formio.middleware.formLoader,
+        router.formio.middleware.formActionHandler('after'),
+        router.formio.middleware.filterResourcejsResponse(['deleted', '__v'])
+      ],
+      hooks: {
+        put: {
+          before(req, res, item, next) {
+            if (item.components) {
+              item.markModified('components');
+            }
+
+            return next();
+          }
         }
       }
-    }
-  }));
+    }));
 };

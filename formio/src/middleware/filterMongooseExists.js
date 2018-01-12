@@ -1,6 +1,6 @@
 'use strict';
 
-var debug = require('debug')('formio:middleware:filterMongooseExists');
+const debug = require('debug')('formio:middleware:filterMongooseExists');
 
 /**
  * Middleware to filter the Mongoose query for the existance of a field, using the provided settings,
@@ -30,19 +30,19 @@ module.exports = function(router) {
       }
 
       // Set the exist modifier.
-      var exists = settings.isNull
+      const exists = settings.isNull
         ? {$eq: null}
         : {$ne: null};
 
       // Build the dynamic mongoose query.
-      var query = {};
+      const query = {};
       query[settings.field] = exists;
 
       debug(query);
-      req.modelQuery = req.modelQuery || this.model;
+      req.modelQuery = req.modelQuery || req.model || this.model;
       req.modelQuery = req.modelQuery.find(query);
 
-      req.countQuery = req.countQuery || this.model;
+      req.countQuery = req.countQuery || req.model || this.model;
       req.countQuery = req.countQuery.find(query);
 
       next();

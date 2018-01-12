@@ -1,9 +1,8 @@
 'use strict';
 
-var jwt = require('jsonwebtoken');
-var util = require('../util/util');
-var _ = require('lodash');
-var debug = {
+const jwt = require('jsonwebtoken');
+const util = require('../util/util');
+const debug = {
   error: require('debug')('formio:error'),
   handler: require('debug')('formio:middleware:tokenHandler')
 };
@@ -20,13 +19,34 @@ var debug = {
  *   The middleware for an Express endpoint.
  */
 module.exports = function(router) {
+  /**
+   * Util function to update the jwt in the response.
+   *
+   * @param inputToken
+   * @param payload
+   * @param res
+   */
+  const generateToken = (inputToken, payload, res) => {
+    // Refresh the token that is sent back to the user when appropriate.
+    const newToken = router.formio.auth.getToken(payload);
+    res.token = newToken
+      ? newToken
+      : inputToken;
+
+    // Set the headers if they haven't been sent yet.
+    if (!res.headersSent) {
+      res.setHeader('Access-Control-Expose-Headers', 'x-jwt-token');
+      res.setHeader('x-jwt-token', res.token);
+    }
+  };
+
   return function tokenHandler(req, res, next) {
     // If someone else provided then skip.
     if (req.user && req.token && res.token) {
       return next();
     }
 
-    var token = util.getRequestValue(req, 'x-jwt-token');
+    const token = util.getRequestValue(req, 'x-jwt-token');
 
     // Skip the token handling if no token was given.
     if (!token) {
@@ -41,7 +61,7 @@ module.exports = function(router) {
     // Decode/refresh the token and store for later middleware.
     jwt.verify(token, router.formio.config.jwt.secret, function(err, decoded) {
       if (err || !decoded) {
-        debug.handler(err || 'Token could not decoded: ' + token);
+        debug.handler(err || `Token could not decoded: ${token}`);
 
         // If the token has expired, send a 440 error (Login Timeout)
         if (err && (err.name === 'JsonWebTokenError')) {
@@ -69,6 +89,28 @@ module.exports = function(router) {
         res.token = null;
         return next();
       }
+
+      // Load the formio hooks.
+      const hook = require('../util/hook')(router.formio);
+
+      // Allow external tokens.
+      if (!hook.alter('external', decoded, req)) {
+        req.user = decoded.user;
+        req.token = decoded;
+        generateToken(token, decoded, res);
+        return next();
+      }
+
+      // See if this is a remote token.
+      if (decoded.project && decoded.permission) {
+        req.user = decoded.user;
+        req.token = decoded;
+        req.userProject = decoded.project;
+        req.remotePermission = decoded.permission;
+        generateToken(token, decoded, res);
+        return next();
+      }
+
       if (!decoded.form || !decoded.form._id) {
         return res.sendStatus(401);
       }
@@ -76,11 +118,8 @@ module.exports = function(router) {
         return res.sendStatus(401);
       }
 
-      // Load the formio hooks.
-      var hook = require('../util/hook')(router.formio);
-
       // Load the user submission.
-      var cache = router.formio.cache || require('../cache/cache')(router);
+      const cache = router.formio.cache || require('../cache/cache')(router);
       cache.loadSubmission(req, decoded.form._id, decoded.user._id, function(err, user) {
         if (err) {
           // Couldn't load the use, try to fail safely.
@@ -116,16 +155,7 @@ module.exports = function(router) {
           req.token = decoded;
 
           // Refresh the token that is sent back to the user when appropriate.
-          var newToken = router.formio.auth.getToken(decoded);
-          res.token = newToken
-            ? newToken
-            : token;
-
-          // Set the headers if they haven't been sent yet.
-          if (!res.headersSent) {
-            res.setHeader('Access-Control-Expose-Headers', 'x-jwt-token');
-            res.setHeader('x-jwt-token', res.token);
-          }
+          generateToken(token, decoded, res);
 
           next();
         });

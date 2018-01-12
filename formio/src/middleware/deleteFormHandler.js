@@ -1,6 +1,6 @@
 'use strict';
 
-var debug = require('debug')('formio:middleware:deleteFormHandler');
+const debug = require('debug')('formio:middleware:deleteFormHandler');
 
 /**
  * The deleteFormHandler middleware.
@@ -11,14 +11,14 @@ var debug = require('debug')('formio:middleware:deleteFormHandler');
  * @returns {Function}
  */
 module.exports = function(router) {
-  var prune = require('../util/delete')(router);
+  const prune = require('../util/delete')(router);
   return function(req, res, next) {
     if (req.method !== 'DELETE' || !req.formId) {
       debug('Skipping');
       return next();
     }
 
-    prune.form(req.formId, function(err) {
+    prune.form(req.formId, req, function(err) {
       if (err) {
         debug(err);
         return next(err);
