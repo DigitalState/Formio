@@ -1,0 +1,5 @@
+node_modules
+stats.json
+.idea
+aot
+angular2/coverage
