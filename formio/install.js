@@ -336,16 +336,14 @@ module.exports = function(formio, items, done) {
         return done();
       }
 
-      // Determine if this is a custom project.
-      var customProject = (['app', 'client'].indexOf(templateFile) === -1);
-      var directoryPath = '';
+      // Which directory to use for importing.
+      var dir = application ? 'app' : 'client';
 
-      if (!customProject) {
-        directoryPath = directories[templateFile];
+      if (!items.extract) {
         // Get the package json file.
         var info = {};
         try {
-          info = JSON.parse(fs.readFileSync(path.join(directoryPath, 'package.json')));
+          info = JSON.parse(fs.readFileSync(directories[dir] + '/package.json'));
         }
         catch (err) {
           debug(err);
@@ -354,19 +352,17 @@ module.exports = function(formio, items, done) {
 
         // Change the document root if we need to.
         if (info.formio && info.formio.docRoot) {
-          directoryPath = path.join(directoryPath, info.formio.docRoot);
+          directories[dir] = path.join(directories[dir], info.formio.docRoot);
         }
       }
 
-      var projectJson = customProject ? templateFile : path.join(directoryPath, 'project.json');
-      if (!fs.existsSync(projectJson)) {
-        util.log(projectJson);
-        return done('Missing project.json file'.red);
+      if (!fs.existsSync(directories[dir] + '/project.json')) {
+        return done('Missing project.json file');
       }
 
       var template = {};
       try {
-        template = JSON.parse(fs.readFileSync(projectJson));
+        template = JSON.parse(fs.readFileSync(path.join(directories[dir], 'project.json')));
       }
       catch (err) {
         debug(err);
@@ -433,13 +429,13 @@ module.exports = function(formio, items, done) {
   util.log('Installing...');
   prompt.start();
   async.series([
-    steps.areYouSure,
-    steps.whatApp,
-    steps.downloadApp,
-    steps.extractApp,
-    steps.downloadClient,
-    steps.extractClient,
-    steps.whatTemplate,
+    // steps.areYouSure,
+    // steps.whatApp,
+    // steps.downloadApp,
+    // steps.extractApp,
+    // steps.downloadClient,
+    // steps.extractClient,
+    // steps.whatTemplate,
     steps.importTemplate,
     steps.createRootUser
   ], function(err, result) {
