@@ -10,7 +10,7 @@ volumes:
 services:
     mongodb:
         image: mongo:3.4.3
-        restart: always
+        restart: on-failures
         volumes:
             - mongodb_data:/data/db
         healthcheck:
@@ -24,7 +24,7 @@ services:
         depends_on:
             mongodb:
                 condition: service_healthy
-        restart: always
+        restart: on-failures
         environment:
             - VIRTUAL_HOST
         volumes:
