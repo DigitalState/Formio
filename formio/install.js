@@ -1,5 +1,6 @@
 'use strict';
 
+var process = require('process');
 var prompt = require('prompt');
 var async = require('async');
 var fs = require('fs-extra');
@@ -395,8 +396,8 @@ module.exports = function(formio, items, done) {
       util.log('Encrypting password');
 
       var result = {
-        'email': 'webmaster@digitalstate.ca',
-        'password': 'changeme'
+        'email': process.env.USERNAME || 'webmaster@digitalstate.ca',
+        'password': process.env.PASSWORD || 'changeme'
       };
 
       formio.encrypt(result.password, function(err, hash) {
