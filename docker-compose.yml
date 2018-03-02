@@ -25,6 +25,8 @@ services:
                 condition: service_healthy
         environment:
             - VIRTUAL_HOST
+            - USERNAME
+            - PASSWORD
         volumes:
             - formio_data:/data
         links:
