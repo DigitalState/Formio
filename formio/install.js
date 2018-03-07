@@ -395,9 +395,38 @@ module.exports = function(formio, items, done) {
       util.log('Creating pre-configured root user account...'.green);
       util.log('Encrypting password');
 
+      // @todo Make this a fixture that is aware of environments
+      var system = {
+          'email': 'system@system.ds',
+          'password': 'system'
+      };
+
+      formio.encrypt(system.password, function(err, hash) {
+          if (err) {
+              return done(err);
+          }
+
+          // Create the system user submission.
+          util.log('Creating system user account');
+          formio.resources.submission.model.create({
+              form: project.resources.admin._id,
+              data: {
+                  email: system.email,
+                  password: hash
+              },
+              roles: [
+                  project.roles.administrator._id
+              ]
+          }, function(err, item) {
+              if (err) {
+                  return done(err);
+              }
+          });
+      });
+
       var result = {
-        'email': process.env.USERNAME || 'webmaster@digitalstate.ca',
-        'password': process.env.PASSWORD || 'changeme'
+          'email': process.env.USERNAME || 'webmaster@digitalstate.ca',
+          'password': process.env.PASSWORD || 'changeme'
       };
 
       formio.encrypt(result.password, function(err, hash) {
