@@ -1,0 +1,15 @@
+{
+  "name": "tools",
+  "version": "1.0.0",
+  "description": "Miscellaneous utilities",
+  "main": "index.js",
+  "scripts": {
+    "update-config-from-env": "node update-config-from-env.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "SEE LICENSE IN LICENSE FILE IN ROOT DIRECTORY",
+  "dependencies": {
+    "deepmerge": "2.0.1",
+    "jsonfile": "4.0.0"
+  }
+}

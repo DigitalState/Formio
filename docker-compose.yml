@@ -27,6 +27,7 @@ services:
             - VIRTUAL_HOST
             - USERNAME
             - PASSWORD
+            - FORMIO_DEFAULT_JSON
         volumes:
             - formio_data:/data
         links:
