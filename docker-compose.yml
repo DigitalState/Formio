@@ -29,9 +29,10 @@ services:
             - PASSWORD
             - FORMIO_DEFAULT_JSON
         volumes:
+            - '${DIRECTORY}/formio:/srv/formio'
             - formio_data:/data
         links:
-              - mongodb:formio_mongodb
+            - mongodb:formio_mongodb
         extra_hosts:
             - 'api.assets.lab.ds:${PROXY_HOST}'
             - 'api.authentication.lab.ds:${PROXY_HOST}'
