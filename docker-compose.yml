@@ -19,7 +19,7 @@ services:
             retries: 10
 
     formio:
-        image: digitalstate/formio:0.1.0
+        image: digitalstate/formio:0.1.2
         depends_on:
             mongodb:
                 condition: service_healthy
