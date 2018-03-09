@@ -19,7 +19,7 @@ services:
             retries: 10
 
     formio:
-        build: .
+        image: digitalstate/formio:0.1.4
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -29,7 +29,7 @@ services:
             - PASSWORD
             - FORMIO_DEFAULT_JSON
         volumes:
-            - '${DIRECTORY}/formio:/srv/formio'
+#            - '${DIRECTORY}/formio:/srv/formio'
             - formio_data:/data
         links:
             - mongodb:formio_mongodb
