@@ -11,6 +11,7 @@ docker-compose up -d
 Then point your browser to: http://localhost:3001
 
 [![Build Status](https://travis-ci.org/DigitalState/Formio.svg?branch=develop)](https://travis-ci.org/DigitalState/Formio)
+[![Coverage Status](https://coveralls.io/repos/github/DigitalState/Formio/badge.svg?branch=develop)](https://coveralls.io/github/DigitalState/Formio?branch=develop)
 
 
 
