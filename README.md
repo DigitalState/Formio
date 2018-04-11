@@ -1,4 +1,5 @@
 # Formio
+
 Form.io microservice
 
 
@@ -8,6 +9,8 @@ docker-compose up -d
 ```
 
 Then point your browser to: http://localhost:3001
+
+[![Build Status](https://travis-ci.org/DigitalState/Formio.svg?branch=develop)](https://travis-ci.org/DigitalState/Formio)
 
 
 
