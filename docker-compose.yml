@@ -1,55 +1,40 @@
 version: '2.1'
 
-volumes:
-    mongodb_data:
-        driver: local
-
-    formio_data:
-        driver: local
-
 services:
-    mongodb:
-        image: mongo:3.4.3
-        volumes:
-            - mongodb_data:/data/db
-        healthcheck:
-            test: ['CMD-SHELL', 'echo "db.stats().ok" | mongo localhost/formioapp --quiet']
-            interval: 5s
-            timeout: 1s
-            retries: 10
+  mongodb:
+    image: mongo:3.4.3
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ['CMD-SHELL', 'echo "db.stats().ok" | mongo localhost/formioapp --quiet']
+      interval: 5s
+      timeout: 1s
+      retries: 10
 
-    formio:
-        build: .
-        depends_on:
-            mongodb:
-                condition: service_healthy
-        environment:
-            - VIRTUAL_HOST
-            - USERNAME
-            - PASSWORD
-            - FORMIO_DEFAULT_JSON
-        volumes:
-#            - '${DIRECTORY}/formio:/srv/formio'
-            - formio_data:/data
-        links:
-            - mongodb:formio_mongodb
-        extra_hosts:
-            - 'api.assets.lab.ds:${PROXY_HOST}'
-            - 'api.authentication.lab.ds:${PROXY_HOST}'
-            - 'api.camunda.lab.ds:${PROXY_HOST}'
-            - 'api.cases.lab.ds:${PROXY_HOST}'
-            - 'api.cms.lab.ds:${PROXY_HOST}'
-            - 'api.discovery.lab.ds:${PROXY_HOST}'
-            - 'api.formio.lab.ds:${PROXY_HOST}'
-            - 'api.identities.lab.ds:${PROXY_HOST}'
-            - 'api.interactions.lab.ds:${PROXY_HOST}'
-            - 'api.logs.lab.ds:${PROXY_HOST}'
-            - 'api.records.lab.ds:${PROXY_HOST}'
-            - 'api.services.lab.ds:${PROXY_HOST}'
-            - 'api.tasks.lab.ds:${PROXY_HOST}'
-            - 'api.topics.lab.ds:${PROXY_HOST}'
+  formio:
+    build: .
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      - VIRTUAL_HOST
+      - USERNAME
+      - PASSWORD
+      - FORMIO_DEFAULT_JSON
+    volumes:
+#      - '${DIRECTORY}/formio:/srv/formio'
+      - formio_data:/data
+    links:
+      - mongodb:formio_mongodb
+
+volumes:
+  mongodb_data:
+    driver: local
+
+  formio_data:
+    driver: local
 
 networks:
-    default:
-        external:
-          name: '${NETWORK}'
+  default:
+    external:
+      name: '${NETWORK}'
