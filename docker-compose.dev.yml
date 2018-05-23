@@ -16,4 +16,5 @@ services:
       - 'api.records.dev.ds:${PROXY_HOST}'
       - 'api.services.dev.ds:${PROXY_HOST}'
       - 'api.tasks.dev.ds:${PROXY_HOST}'
+      - 'api.tenants.dev.ds:${PROXY_HOST}'
       - 'api.topics.dev.ds:${PROXY_HOST}'
