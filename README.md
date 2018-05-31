@@ -23,7 +23,7 @@ Then point your browser to: http://localhost:3001
 ![formio radio component edit](./documentation/images/formio-raido-component-edit.png)
 
 
-# Sever Validation Example
+# Server Validation Example
 
 URL: `{{services}}{{environment}}/scenarios/e049f2b4-b249-48c2-850c-64d4c4b39527/submissions`
 
