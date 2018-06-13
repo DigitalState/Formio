@@ -17,10 +17,10 @@ services:
       mongodb:
         condition: service_healthy
     environment:
-      - VIRTUAL_HOST
-      - USERNAME
-      - PASSWORD
-      - FORMIO_DEFAULT_JSON
+      VIRTUAL_HOST: '${FORMIO_VIRTUAL_HOST}'
+      USERNAME: '${USERNAME}'
+      PASSWORD: '${PASSWORD}'
+      FORMIO_DEFAULT_JSON: '${FORMIO_DEFAULT_JSON}'
     volumes:
 #      - '${DIRECTORY}/formio:/srv/formio'
       - formio_data:/data

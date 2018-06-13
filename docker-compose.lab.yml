@@ -1,6 +1,13 @@
 version: '2.1'
 
 services:
+  adminer:
+    image: adminer:4-standalone
+    environment:
+      VIRTUAL_HOST: '${ADMINER_VIRTUAL_HOST}'
+    links:
+      - mongodb:formio_mongodb
+
   formio:
     extra_hosts:
       - 'api.assets.lab.ds:${PROXY_HOST}'
