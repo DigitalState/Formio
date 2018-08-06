@@ -1,15 +1,8 @@
 version: '2.1'
 
 services:
-  adminer:
-    image: adminer:4-standalone
-    environment:
-      VIRTUAL_HOST: '${ADMINER_VIRTUAL_HOST}'
-    links:
-      - mongodb:formio_mongodb
-
-  formio:
-    extra_hosts:
+  mongodb:
+    extra_hosts: &hosts
       - 'api.assets.lab.ds:${PROXY_HOST}'
       - 'api.authentication.lab.ds:${PROXY_HOST}'
       - 'api.camunda.lab.ds:${PROXY_HOST}'
@@ -26,3 +19,18 @@ services:
       - 'api.tasks.lab.ds:${PROXY_HOST}'
       - 'api.tenants.lab.ds:${PROXY_HOST}'
       - 'api.topics.lab.ds:${PROXY_HOST}'
+
+  formio:
+    extra_hosts: *hosts
+
+  registrator:
+    extra_hosts: *hosts
+
+  adminer:
+    image: adminer:4-standalone
+    environment:
+      VIRTUAL_HOST: '${ADMINER_VIRTUAL_HOST}'
+      SERVICE_IGNORE: 'true'
+    extra_hosts: *hosts
+    links:
+      - mongodb:formio_mongodb

@@ -1,8 +1,8 @@
 version: '2.1'
 
 services:
-  formio:
-    extra_hosts:
+  mongodb:
+    extra_hosts: &hosts
       - 'api.assets.stag.ds:${PROXY_HOST}'
       - 'api.authentication.stag.ds:${PROXY_HOST}'
       - 'api.camunda.stag.ds:${PROXY_HOST}'
@@ -19,3 +19,9 @@ services:
       - 'api.tasks.stag.ds:${PROXY_HOST}'
       - 'api.tenants.stag.ds:${PROXY_HOST}'
       - 'api.topics.stag.ds:${PROXY_HOST}'
+
+  formio:
+    extra_hosts: *hosts
+
+  registrator:
+    extra_hosts: *hosts

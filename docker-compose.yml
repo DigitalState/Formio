@@ -3,6 +3,8 @@ version: '2.1'
 services:
   mongodb:
     image: mongo:3.4.3
+    environment:
+      SERVICE_IGNORE: 'true'
     volumes:
       - mongodb_data:/data/db
     healthcheck:
@@ -21,11 +23,21 @@ services:
       USERNAME: '${USERNAME}'
       PASSWORD: '${PASSWORD}'
       FORMIO_DEFAULT_JSON: '${FORMIO_DEFAULT_JSON}'
+      SERVICE_ID: '${COMPOSE_PROJECT_NAME}formio'
+      SERVICE_NAME: 'formio'
     volumes:
 #      - '${DIRECTORY}/formio:/srv/formio'
       - formio_data:/data
     links:
       - mongodb:formio_mongodb
+
+  registrator:
+    image: gliderlabs/registrator:v7
+    environment:
+      CONSUL_HTTP_TOKEN: '${DISCOVERY_CREDENTIAL}'
+    command: '-internal consul://${DISCOVERY_HOST}'
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
 
 volumes:
   mongodb_data:

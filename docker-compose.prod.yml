@@ -1,8 +1,8 @@
 version: '2.1'
 
 services:
-  formio:
-    extra_hosts:
+  mongodb:
+    extra_hosts: &hosts
       - 'api.assets.prod.ds:${PROXY_HOST}'
       - 'api.authentication.prod.ds:${PROXY_HOST}'
       - 'api.camunda.prod.ds:${PROXY_HOST}'
@@ -19,3 +19,9 @@ services:
       - 'api.tasks.prod.ds:${PROXY_HOST}'
       - 'api.tenants.prod.ds:${PROXY_HOST}'
       - 'api.topics.prod.ds:${PROXY_HOST}'
+
+  formio:
+    extra_hosts: *hosts
+
+  registrator:
+    extra_hosts: *hosts
