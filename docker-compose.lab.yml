@@ -1,36 +1,11 @@
 version: '2.1'
 
 services:
-  mongodb:
-    extra_hosts: &hosts
-      - 'api.assets.lab.ds:${PROXY_HOST}'
-      - 'api.authentication.lab.ds:${PROXY_HOST}'
-      - 'api.camunda.lab.ds:${PROXY_HOST}'
-      - 'api.cases.lab.ds:${PROXY_HOST}'
-      - 'api.cms.lab.ds:${PROXY_HOST}'
-      - 'api.discovery.lab.ds:${PROXY_HOST}'
-      - 'api.formio.lab.ds:${PROXY_HOST}'
-      - 'api.forms.lab.ds:${PROXY_HOST}'
-      - 'api.identities.lab.ds:${PROXY_HOST}'
-      - 'api.interactions.lab.ds:${PROXY_HOST}'
-      - 'api.logs.lab.ds:${PROXY_HOST}'
-      - 'api.records.lab.ds:${PROXY_HOST}'
-      - 'api.services.lab.ds:${PROXY_HOST}'
-      - 'api.tasks.lab.ds:${PROXY_HOST}'
-      - 'api.tenants.lab.ds:${PROXY_HOST}'
-      - 'api.topics.lab.ds:${PROXY_HOST}'
-
-  formio:
-    extra_hosts: *hosts
-
-  registrator:
-    extra_hosts: *hosts
-
-  adminer:
+  database_ui:
     image: adminer:4-standalone
     environment:
-      VIRTUAL_HOST: '${ADMINER_VIRTUAL_HOST}'
-      SERVICE_IGNORE: 'true'
-    extra_hosts: *hosts
+      SERVICE_8080_ID: '${COMPOSE_PROJECT_NAME}_database_ui_8080'
+      SERVICE_8080_NAME: '${COMPOSE_PROJECT_NAME}_database_ui_8080'
+      SERVICE_8080_TAGS: 'proxy.enable=true,proxy.tags=external,proxy.frontend.entryPoints=http,proxy.frontend.rule=Host:${DATABASE_UI_HOST}'
     links:
       - mongodb:formio_mongodb
