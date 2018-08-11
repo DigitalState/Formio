@@ -5,4 +5,4 @@ services:
 
 script:
   - docker network create dsproxy_default
-  - docker-compose -f docker-compose.yml -f docker-compose.test.ci.yml build
+  - docker-compose -f docker-compose.yml -f docker-compose.test.yml build
