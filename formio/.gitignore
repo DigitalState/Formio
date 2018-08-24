@@ -1,0 +1,8 @@
+.idea
+#bower_components
+#node_modules
+node_modules.docker-container
+node_modules.osx
+#client*
+#app*
+npm-debug.log

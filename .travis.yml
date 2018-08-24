@@ -1,0 +1,8 @@
+sudo: required
+
+services:
+  - docker
+
+script:
+  - docker network create dsproxy_default
+  - docker-compose -f docker-compose.yml -f docker-compose.test.yml build

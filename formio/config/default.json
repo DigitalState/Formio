@@ -1,0 +1,76 @@
+{
+  "port": 80,
+  "appPort": 8080,
+  "host": "api.formio.ds",
+  "protocol": "http",
+  "domain": "http://api.formio.ds",
+  "basePath": "",
+  "mongo": "mongodb://formio_mongodb:27017/formioapp",
+  "mongoSampleDatabaseConfiguration": "mongodb://formio_mongodb:27017/formioapp",
+  "mongoSecret": "FORMIO_MONGO_SECRET",
+  "reservedForms": [
+    "submission",
+    "exists",
+    "export",
+    "role",
+    "current",
+    "logout",
+    "import",
+    "form",
+    "access",
+    "token"
+  ],
+  "jwt": {
+    "secret": "FORMIO_JWT_SECRET",
+    "expireTime": 240
+  },
+  "email": {
+    "type": "sendgrid",
+    "username": "sendgrid-user",
+    "password": "sendgrid-pass"
+  },
+  "settings": {
+    "office365": {
+      "tenant": "",
+      "clientId": "",
+      "email": "",
+      "cert": "",
+      "thumbprint": ""
+    },
+    "database": {
+      "mysql": {
+        "host": "",
+        "port": "",
+        "database": "",
+        "user": "",
+        "password": ""
+      },
+      "mssql": {
+        "host": "",
+        "port": "",
+        "database": "",
+        "user": "",
+        "password": ""
+      }
+    },
+    "email": {
+      "gmail": {
+        "auth": {
+          "user": "",
+          "pass": ""
+        }
+      },
+      "sendgrid": {
+        "auth": {
+          "api_user": "",
+          "api_key": ""
+        }
+      },
+      "mandrill": {
+        "auth": {
+          "apiKey": ""
+        }
+      }
+    }
+  }
+}
