@@ -4,9 +4,6 @@ env:
   DOCKER_VERSION: 18.06.1~ce~3-0~ubuntu
   DOCKER_COMPOSE_VERSION: 1.22.0
 
-services:
-  - docker
-
 before_install:
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
