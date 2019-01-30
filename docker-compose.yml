@@ -3,8 +3,6 @@ version: '2.1'
 services:
   mongodb:
     image: mongo:3.4.3
-    environment:
-      SERVICE_IGNORE: 'true'
     volumes:
       - mongodb_data:/data/db
     healthcheck:
@@ -12,27 +10,29 @@ services:
       interval: 5s
       timeout: 1s
       retries: 10
+    networks:
+      default:
+        aliases:
+          - formio_mongodb
 
   formio:
+    image: digitalstate/formio-formio
     build: .
     depends_on:
       mongodb:
         condition: service_healthy
     environment:
-      USERNAME: '${USERNAME}'
-      PASSWORD: '${PASSWORD}'
-      FORMIO_DEFAULT_JSON: '${FORMIO_DEFAULT_JSON}'
-      SERVICE_ENTRYPOINT-PROD: '$${url}'
-      SERVICE_ENTRYPOINT-DEV: '$${url}'
-      SERVICE_ENTRYPOINT-TEST: '$${url}'
-      SERVICE_80_ID: '${COMPOSE_PROJECT_NAME}_api_http'
-      SERVICE_80_NAME: '${COMPOSE_PROJECT_NAME}_api_http'
-      SERVICE_80_TAGS: 'proxy.enable=true,proxy.tags=external,proxy.frontend.entryPoints=http,proxy.frontend.rule=Host:${API_HOST}'
+      USERNAME: ${API_ADMIN_USER}
+      PASSWORD: ${API_ADMIN_PASSWORD}
+      FORMIO_DEFAULT_JSON: ${FORMIO_DEFAULT_JSON}
     volumes:
-#      - '${DIRECTORY}/formio:/srv/formio'
       - formio_data:/data
     links:
       - mongodb:formio_mongodb
+    networks:
+      default:
+        aliases:
+          - formio_formio
 
 volumes:
   mongodb_data:
@@ -40,8 +40,3 @@ volumes:
 
   formio_data:
     driver: local
-
-networks:
-  default:
-    external:
-      name: '${NETWORK}'
