@@ -17,7 +17,8 @@ services:
 
   formio:
     image: digitalstate/formio-formio
-    build: .
+    build:
+      context: ./formio
     depends_on:
       mongodb:
         condition: service_healthy

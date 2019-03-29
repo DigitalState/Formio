@@ -4,7 +4,7 @@ RUN apk add --no-cache make gcc g++ python git
 
 RUN apk add dos2unix --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
 
-COPY formio /srv/formio
+COPY . /srv/formio
 
 RUN cd /srv/formio && npm install && npm rebuild && npm rebuild bcrypt --build-from-source
 
