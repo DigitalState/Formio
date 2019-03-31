@@ -1,4 +1,6 @@
 version: '2.1'
+
+services:
   formio:
     build:
       context: ./formio
