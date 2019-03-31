@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.0 (2019-03-31)
+
+- Feature [Docker] Restructure docker for dockerhub integration
+
+## 0.15.0 (2019-03-31)
+
 ## 0.14.0 (2018-10-29)
 
 ## 0.13.0 (2018-10-17)
