@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.17.0 (2019-07-14)
+
 ## 0.16.0 (2019-03-31)
 
 - Feature [Docker] Restructure docker for dockerhub integration
