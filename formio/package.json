@@ -43,7 +43,7 @@
     "method-override": "2.3.0",
     "moment": "2.19.3",
     "mongodb": "2.2.34",
-    "mongoose": "4.13.9",
+    "mongoose": "5.7.5",
     "mssql": "4.1.0",
     "mysql": "2.7.0",
     "nodemailer": "4.3.0",
