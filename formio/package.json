@@ -64,7 +64,7 @@
   },
   "devDependencies": {
     "chance": "1.0.11",
-    "eslint": "4.15.0",
+    "eslint": "4.18.2",
     "mocha": "4.0.1",
     "nodemon": "1.14.9",
     "pre-commit": "1.2.2",
