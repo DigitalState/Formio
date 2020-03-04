@@ -39,7 +39,7 @@
     "html-entities": "1.2.1",
     "joi": "13.1.0",
     "jsonwebtoken": "8.1.0",
-    "lodash": "4.17.4",
+    "lodash": "4.17.13",
     "method-override": "2.3.0",
     "moment": "2.19.3",
     "mongodb": "2.2.34",
