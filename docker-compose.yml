@@ -16,7 +16,7 @@ services:
           - formio_mongodb
 
   formio:
-    image: digitalstate/formio:0.18.0
+    image: digitalstate/formio:0.19.0
     depends_on:
       mongodb:
         condition: service_healthy
