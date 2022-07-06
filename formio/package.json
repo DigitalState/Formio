@@ -41,7 +41,7 @@
     "jsonwebtoken": "8.1.0",
     "lodash": "4.17.4",
     "method-override": "2.3.0",
-    "moment": "2.19.3",
+    "moment": "2.29.4",
     "mongodb": "2.2.34",
     "mongoose": "4.13.9",
     "mssql": "4.1.0",
