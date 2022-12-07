@@ -33,7 +33,7 @@
     "delete-property": "0.0.4",
     "eslint-config-formio": "1.1.2",
     "event-chain": "0.0.1",
-    "express": "4.16.2",
+    "express": "4.17.3",
     "formiojs": "2.27.0",
     "fs-extra": "4.0.3",
     "html-entities": "1.2.1",
